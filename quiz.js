@@ -1,3 +1,4 @@
+
 const quizQuestions = [
     {
         question: "What is the capital of Canada?",
@@ -103,8 +104,10 @@ const quizQuestions = [
 
 let currentQuestionIndex = 0;
 let score = 0;
+let timerInterval;
+const quizDuration = 10 * 60 * 1000; // 10 minutes in milliseconds
+let timeRemaining = quizDuration;
 
-// Function to shuffle an array
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -112,8 +115,21 @@ function shuffleArray(array) {
     }
 }
 
-// Shuffle the questions
 shuffleArray(quizQuestions);
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timeRemaining -= 1000; // Decrement time by 1 second
+        const minutes = Math.floor(timeRemaining / (60 * 1000));
+        const seconds = Math.floor((timeRemaining % (60 * 1000)) / 1000);
+        document.getElementById('timer').textContent = `Time Remaining: ${minutes}m ${seconds}s`;
+
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            endQuiz(); // End the quiz when time is up
+        }
+    }, 1000);
+}
 
 function loadQuestion() {
     const questionData = quizQuestions[currentQuestionIndex];
@@ -140,9 +156,11 @@ function nextQuestion() {
             score++;
             document.getElementById('result').textContent = "Correct!";
             document.getElementById('result').style.color ="green";
+            document.getElementById('result').style.fontSize ="30px";
         } else {
             document.getElementById('result').textContent = `Incorrect! The correct answer was ${correctAnswer}.`;
-            document.getElementById('result').style.color ="red";
+            document.getElementById('result').style.color = "red";
+            document.getElementById('result').style.fontSize = "30px";
         }
         
         currentQuestionIndex++;
@@ -150,15 +168,24 @@ function nextQuestion() {
         if (currentQuestionIndex < quizQuestions.length) {
             loadQuestion();
         } else {
-            document.getElementById('result').textContent += ` Your final score is ${score} out of ${quizQuestions.length}.`;
-            document.getElementById('question').style.display = 'none';
-            document.getElementById('options').style.display = 'none';
-            document.getElementById('next').style.display = 'none';
+            endQuiz(); // End the quiz when all questions have been answered
         }
     } else {
         document.getElementById('result').textContent = "Please select an answer.";
+        document.getElementById('result').style.color ="red";
+        document.getElementById('result').style.fontSize ="30px";
     }
+}
+
+function endQuiz() {
+    document.getElementById('result').textContent += ` Your final score is ${score} out of ${quizQuestions.length}.`;
+    document.getElementById('question').style.display = 'none';
+    document.getElementById('options').style.display = 'none';
+    document.getElementById('next').style.display = 'none';
+    document.getElementById('timer').style.display = 'none';
+    clearInterval(timerInterval); // Stop the timer
 }
 
 // Initialize quiz
 loadQuestion();
+startTimer();
